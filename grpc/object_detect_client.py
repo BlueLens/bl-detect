@@ -26,9 +26,11 @@ import object_detect_pb2
 import object_detect_pb2_grpc
 
 
+HOST = 'magi-0.stylelens.io'
+PORT = '50052'
 
 def run():
-  channel = grpc.insecure_channel('localhost:50052')
+  channel = grpc.insecure_channel(HOST + ':' + PORT)
   stub = object_detect_pb2_grpc.DetectStub(channel)
 
   file = '/Users/bok95/Desktop/img2.jpg'
