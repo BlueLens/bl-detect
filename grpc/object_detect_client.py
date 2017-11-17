@@ -19,6 +19,7 @@ from __future__ import print_function
 import grpc
 
 from PIL import Image
+import numpy as np
 import tensorflow as tf
 
 import object_detect_pb2
@@ -41,7 +42,11 @@ def run():
   objects = stub.GetObjects(object_detect_pb2.DetectRequest(file_data=image_data))
 
   for object in objects:
-    print(object)
+    print(object.class_name)
+    print(object.class_code)
+    print(object.location)
+    arr = np.fromstring(object.feature, dtype=np.float32)
+    print(arr)
 
 if __name__ == '__main__':
   run()

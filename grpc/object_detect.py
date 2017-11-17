@@ -7,6 +7,7 @@ import os
 from PIL import Image
 import tensorflow as tf
 from object_detection.utils import visualization_utils as vis_util
+from feature_extract import ExtractFeature
 from stylelens_feature import feature_extract
 
 import io
@@ -14,6 +15,8 @@ from util import label_map_util
 
 OD_MODEL = os.environ['OD_MODEL']
 OD_LABELS = os.environ['OD_LABELS']
+
+TMP_CROP_IMG_FILE = './tmp.jpg'
 
 NUM_CLASSES = 3
 
@@ -34,6 +37,7 @@ class ObjectDetect(object):
 
       self.__sess = tf.Session(graph=self.__detection_graph)
 
+    self.image_feature = ExtractFeature()
     # self.image_feature = feature_extract.ExtractFeature()
     print('_init_ done')
 
@@ -75,20 +79,36 @@ class ObjectDetect(object):
         ymin, xmin, ymax, xmax = tuple(boxes[i].tolist())
 
         use_normalized_coordinates = True
+        image_pil = Image.fromarray(np.uint8(image_np)).convert('RGB')
+
         left, right, top, bottom = self.crop_bounding_box(
-          image_np,
+          image_pil,
           ymin,
           xmin,
           ymax,
           xmax,
           use_normalized_coordinates=use_normalized_coordinates)
+
+        feature_vector = self.extract_feature(image_pil, left, right, top, bottom)
         item = {}
 
         item['box'] = [left, right, top, bottom]
         item['class_name'] = class_name
         item['class_code'] = class_code
+        item['feature'] = feature_vector
         taken_boxes.append(item)
     return taken_boxes
+
+  def extract_feature(self, image, left, right, top, bottom):
+    area = (left, top, left + abs(left-right), top + abs(bottom-top))
+    cropped_img = image.crop(area)
+    cropped_img.save(TMP_CROP_IMG_FILE)
+    # cimage = io.BytesIO()
+    # cropped_img.save(cimage, format='JPEG')
+    # cimage.seek(0)  # rewind to the start
+    # cimage = Image.open(cimage)
+    feature = self.image_feature.extract_feature(TMP_CROP_IMG_FILE)
+    return feature
 
   def load_image_into_numpy_array(self, image):
     (im_width, im_height) = image.size
@@ -102,53 +122,13 @@ class ObjectDetect(object):
                         ymax,
                         xmax,
                         use_normalized_coordinates=True):
-    """Adds a bounding box to an image (numpy array).
-
-    Args:
-      image: a numpy array with shape [height, width, 3].
-      ymin: ymin of bounding box in normalized coordinates (same below).
-      xmin: xmin of bounding box.
-      ymax: ymax of bounding box.
-      xmax: xmax of bounding box.
-      name: classname
-      color: color to draw bounding box. Default is red.
-      thickness: line thickness. Default value is 4.
-      display_str_list: list of strings to display in box
-                        each to be shown on its own line).
-      use_normalized_coordinates: If True (default), treat coordinates
-        ymin, xmin, ymax, xmax as relative to the image.  Otherwise treat
-        coordinates as absolute.
-    """
-    image_pil = Image.fromarray(np.uint8(image)).convert('RGB')
-    im_width, im_height = image_pil.size
+    im_width, im_height = image.size
     if use_normalized_coordinates:
       (left, right, top, bottom) = (xmin * im_width, xmax * im_width,
                                     ymin * im_height, ymax * im_height)
     else:
       (left, right, top, bottom) = (xmin, xmax, ymin, ymax)
 
-    # print(image_pil)
-    # area = (left, top, left + abs(left-right), top + abs(bottom-top))
-    # cropped_img = image_pil.crop(area)
-    # cropped_img.save(TMP_CROP_IMG_FILE)
-    # img_feature_vec = self.image_feature.extract_feature(TMP_CROP_IMG_FILE)
-    # cropped_img.show()
-    # id = self.save_to_db(image_info)
-
-
-    # try:
-    #   api_response = self.__search.search_image(file=TMP_CROP_IMG_FILE)
-    #   if api_response.code == 0 and api_response.data != None:
-    #     res_images = api_response.data.images
-    #
-    # except ApiException as e:
-    #   print("Exception when calling SearchApi->search_image: %s\n" % e)
-
-    # save_image_to_file(image_pil, ymin, xmin, ymax, xmax,
-    #                            use_normalized_coordinates)
-    # np.copyto(image, np.array(image_pil))
-    # return id, res_images, left, right, top, bottom
-    # return id, left, right, top, bottom
     return left, right, top, bottom
 
   def detect_objects(self, image_np, sess, detection_graph, show_box=True):
