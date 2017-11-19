@@ -29,7 +29,7 @@ _LOCATION = _descriptor.Descriptor(
   name='Location',
   full_name='objectdetect.Location',
   filename=None,
-  file=DESCRIPTOR,t
+  file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
