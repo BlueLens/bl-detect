@@ -40,5 +40,6 @@ message DetectReply {
     Location location = 1;
     string class_name = 2;
     string class_code = 3;
-    bytes feature = 4;
+    float  score = 4;
+    bytes feature = 5;
 }

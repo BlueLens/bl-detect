@@ -26,7 +26,8 @@ import object_detect_pb2
 import object_detect_pb2_grpc
 
 
-HOST = 'magi-0.stylelens.io'
+# HOST = 'magi-0.stylelens.io'
+HOST = 'localhost'
 PORT = '50052'
 
 def run():

@@ -36,6 +36,7 @@ class Detect(object_detect_pb2_grpc.DetectServicer):
       detectReply = object_detect_pb2.DetectReply()
       detectReply.class_code = object['class_code']
       detectReply.class_name = object['class_name']
+      detectReply.score = object['score']
       detectReply.location.left = object['box'][0]
       detectReply.location.right = object['box'][1]
       detectReply.location.top = object['box'][2]
