@@ -66,7 +66,7 @@ class ObjectDetect(object):
       np.squeeze(scores),
       np.squeeze(classes).astype(np.int32))
 
-    log.debug(out_boxes)
+    # log.debug(out_boxes)
     return out_boxes
 
   def take_object(self, image_np, boxes, scores, classes):
