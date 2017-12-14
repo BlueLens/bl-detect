@@ -8,7 +8,6 @@ from PIL import Image
 import tensorflow as tf
 from object_detection.utils import visualization_utils as vis_util
 from feature_extract import ExtractFeature
-from stylelens_feature import feature_extract
 from bluelens_log import Logging
 
 import io
@@ -49,7 +48,6 @@ class ObjectDetect(object):
       self.__sess = tf.Session(graph=self.__detection_graph)
 
     self.image_feature = ExtractFeature()
-    # self.image_feature = feature_extract.ExtractFeature()
     log.info('_init_ done')
 
   def detect(self, image_bytes):

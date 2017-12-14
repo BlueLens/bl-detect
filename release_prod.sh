@@ -2,7 +2,7 @@
 
 export ORG="bluelens"
 export IMAGE="bl-detect"
-export TAG="latest"
+export TAG="prod"
 
 docker login
 

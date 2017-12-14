@@ -14,6 +14,7 @@
 
 from concurrent import futures
 import time
+import os
 
 import grpc
 
@@ -23,6 +24,7 @@ import object_detect_pb2_grpc
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
+GRPC_PORT = os.environ['GRPC_PORT']
 
 class Detect(object_detect_pb2_grpc.DetectServicer):
   def __init__(self):
@@ -47,7 +49,7 @@ class Detect(object_detect_pb2_grpc.DetectServicer):
 def serve():
   server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
   object_detect_pb2_grpc.add_DetectServicer_to_server(Detect(), server)
-  server.add_insecure_port('[::]:50052')
+  server.add_insecure_port('[::]:' + GRPC_PORT)
   server.start()
   try:
     while True:
