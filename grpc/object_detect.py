@@ -58,7 +58,8 @@ class ObjectDetect(object):
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
 
-      self.__sess = tf.Session(graph=self.__detection_graph)
+      with tf.device('/device:GPU:1'):
+        self.__sess = tf.Session(graph=self.__detection_graph)
 
     log.info('_init_ done')
 
