@@ -15,7 +15,6 @@ import io
 from util import label_map_util
 
 TMP_CROP_IMG_FILE = './tmp.jpg'
-MIN_SCORE_THRESH = 0.5
 
 NUM_CLASSES = 3
 
@@ -30,6 +29,7 @@ FEATURE_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
 FEATURE_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
 OD_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
 OD_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
+OD_SCORE_MIN = float(os.environ['OD_SCORE_MIN'])
 
 MODEL_FILE = 'object_detection_model.pb'
 LABEL_MAP_FILE = 'label_map.pbtxt'
@@ -49,7 +49,7 @@ class ObjectDetect(object):
                                                                 use_display_name=True)
     self.__category_index = label_map_util.create_category_index(categories)
     self.__detection_graph = tf.Graph()
-    self.__feature_extractor = ExtractFeature(use_gpu=True)
+    # self.__feature_extractor = ExtractFeature(use_gpu=True)
     model_file = self.load_model()
     with self.__detection_graph.as_default():
       od_graph_def = tf.GraphDef()
@@ -106,7 +106,7 @@ class ObjectDetect(object):
     if not max_boxes_to_save:
       max_boxes_to_save = boxes.shape[0]
     for i in range(min(max_boxes_to_save, boxes.shape[0])):
-      if scores is None or scores[i] > MIN_SCORE_THRESH:
+      if scores is None or scores[i] > OD_SCORE_MIN:
         print(scores[i])
         if classes[i] in self.__category_index.keys():
           class_name = self.__category_index[classes[i]]['name']
@@ -127,14 +127,14 @@ class ObjectDetect(object):
           xmax,
           use_normalized_coordinates=use_normalized_coordinates)
 
-        feature_vector = self.extract_feature(image_pil, left, right, top, bottom)
+        # feature_vector = self.extract_feature(image_pil, left, right, top, bottom)
         item = {}
 
         item['box'] = [left, right, top, bottom]
         item['class_name'] = class_name
         item['class_code'] = class_code
         item['score'] = scores[i]
-        item['feature'] = feature_vector
+        # item['feature'] = feature_vector
         taken_boxes.append(item)
     return taken_boxes
 
