@@ -4,10 +4,11 @@ from __future__ import absolute_import
 
 import numpy as np
 import os
+from util import s3
 from PIL import Image
 import tensorflow as tf
 from object_detection.utils import visualization_utils as vis_util
-from feature_extract import ExtractFeature
+from stylelens_feature.feature_extract import ExtractFeature
 from bluelens_log import Logging
 
 import io
@@ -18,37 +19,68 @@ MIN_SCORE_THRESH = 0.5
 
 NUM_CLASSES = 3
 
-OD_MODEL = os.environ['OD_MODEL']
-OD_LABELS = os.environ['OD_LABELS']
-
+AWS_BUCKET = 'bluelens-style-model'
+AWS_BUCKET_FOLDER = 'object_detection'
+AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 REDIS_SERVER = os.environ['REDIS_SERVER']
 REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
+RELEASE_MODE = os.environ['RELEASE_MODE']
+FEATURE_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
+FEATURE_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
+OD_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
+OD_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
+
+MODEL_FILE = 'object_detection_model.pb'
+LABEL_MAP_FILE = 'label_map.pbtxt'
 options = {
   'REDIS_SERVER': REDIS_SERVER,
   'REDIS_PASSWORD': REDIS_PASSWORD
 }
 log = Logging(options, tag='bl-detect:ObjectDetect')
-
+storage = s3.S3(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY)
 
 class ObjectDetect(object):
   def __init__(self):
-    label_map = label_map_util.load_labelmap(OD_LABELS)
+    label_map_file = self.load_labelemap()
+    label_map = label_map_util.load_labelmap(label_map_file)
     log.debug(label_map)
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
                                                                 use_display_name=True)
     self.__category_index = label_map_util.create_category_index(categories)
     self.__detection_graph = tf.Graph()
+    self.__feature_extractor = ExtractFeature(use_gpu=True)
+    model_file = self.load_model()
     with self.__detection_graph.as_default():
       od_graph_def = tf.GraphDef()
-      with tf.gfile.GFile(OD_MODEL, 'rb') as fid:
+      with tf.gfile.GFile(model_file, 'rb') as fid:
         serialized_graph = fid.read()
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
 
       self.__sess = tf.Session(graph=self.__detection_graph)
 
-    self.image_feature = ExtractFeature()
     log.info('_init_ done')
+
+  def load_labelemap(self):
+    log.info('load_labelmap')
+    file = os.path.join(os.getcwd(), LABEL_MAP_FILE)
+    key = os.path.join(AWS_BUCKET_FOLDER, RELEASE_MODE, LABEL_MAP_FILE)
+    try:
+      return storage.download_file_from_bucket(AWS_BUCKET, file, key)
+    except:
+      log.error('download error')
+      return None
+
+  def load_model(self):
+    log.info('load_model')
+    file = os.path.join(os.getcwd(), MODEL_FILE)
+    key = os.path.join(AWS_BUCKET_FOLDER, RELEASE_MODE, MODEL_FILE)
+    try:
+      return storage.download_file_from_bucket(AWS_BUCKET, file, key)
+    except:
+      log.error('download error')
+      return None
 
   def detect(self, image_bytes):
 
@@ -113,7 +145,7 @@ class ObjectDetect(object):
     # cropped_img.save(cimage, format='JPEG')
     # cimage.seek(0)  # rewind to the start
     # cimage = Image.open(cimage)
-    feature = self.image_feature.extract_feature(TMP_CROP_IMG_FILE)
+    feature = self.__feature_extractor.extract_feature(TMP_CROP_IMG_FILE)
     return feature
 
   def load_image_into_numpy_array(self, image):
