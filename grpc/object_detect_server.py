@@ -18,7 +18,8 @@ import os
 
 import grpc
 
-from object_detect import ObjectDetect
+from object_detect_top import TopObjectDetect
+from object_detect_bottom import BottomObjectDetect
 import object_detect_pb2
 import object_detect_pb2_grpc
 
@@ -28,11 +29,17 @@ OD_GRPC_PORT = os.environ['OD_GRPC_PORT']
 
 class Detect(object_detect_pb2_grpc.DetectServicer):
   def __init__(self):
-    self.od = ObjectDetect()
+    self.top_od = TopObjectDetect()
+    self.bottom_od = BottomObjectDetect()
 
   def GetObjects(self, request, context):
     # print(request)
-    objects = self.od.detect(request.file_data)
+    top_objects = self.top_od.detect(request.file_data)
+    bottom_objects = self.bottom_od.detect(request.file_data)
+
+    objects = []
+    objects.extend(top_objects)
+    objects.extend(bottom_objects)
 
     for object in objects:
       detectReply = object_detect_pb2.DetectReply()

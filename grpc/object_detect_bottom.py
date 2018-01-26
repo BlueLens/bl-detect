@@ -16,10 +16,11 @@ from util import label_map_util
 
 TMP_CROP_IMG_FILE = './tmp.jpg'
 
-NUM_CLASSES = 3
+NUM_CLASSES = 1
 
 AWS_BUCKET = 'bluelens-style-model'
 AWS_BUCKET_FOLDER = 'object_detection'
+MODEL_TYPE = 'bottom'
 AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 REDIS_SERVER = os.environ['REDIS_SERVER']
@@ -31,16 +32,16 @@ OD_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
 OD_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
 OD_SCORE_MIN = float(os.environ['OD_SCORE_MIN'])
 
-MODEL_FILE = 'object_detection_model.pb'
+MODEL_FILE = 'frozen_inference_graph.pb'
 LABEL_MAP_FILE = 'label_map.pbtxt'
 options = {
   'REDIS_SERVER': REDIS_SERVER,
   'REDIS_PASSWORD': REDIS_PASSWORD
 }
-log = Logging(options, tag='bl-detect:ObjectDetect')
+log = Logging(options, tag='bl-detect:BottomObjectDetect')
 storage = s3.S3(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY)
 
-class ObjectDetect(object):
+class BottomObjectDetect(object):
   def __init__(self):
     label_map_file = self.load_labelemap()
     label_map = label_map_util.load_labelmap(label_map_file)
@@ -59,6 +60,8 @@ class ObjectDetect(object):
         tf.import_graph_def(od_graph_def, name='')
 
       with tf.device('/device:GPU:1'):
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
         self.__sess = tf.Session(graph=self.__detection_graph)
 
     log.info('_init_ done')
@@ -66,7 +69,8 @@ class ObjectDetect(object):
   def load_labelemap(self):
     log.info('load_labelmap')
     file = os.path.join(os.getcwd(), LABEL_MAP_FILE)
-    key = os.path.join(AWS_BUCKET_FOLDER, RELEASE_MODE, LABEL_MAP_FILE)
+    key = os.path.join(AWS_BUCKET_FOLDER, RELEASE_MODE, MODEL_TYPE, LABEL_MAP_FILE)
+    print(key)
     try:
       return storage.download_file_from_bucket(AWS_BUCKET, file, key)
     except:
@@ -76,7 +80,8 @@ class ObjectDetect(object):
   def load_model(self):
     log.info('load_model')
     file = os.path.join(os.getcwd(), MODEL_FILE)
-    key = os.path.join(AWS_BUCKET_FOLDER, RELEASE_MODE, MODEL_FILE)
+    key = os.path.join(AWS_BUCKET_FOLDER, RELEASE_MODE, MODEL_TYPE, MODEL_FILE)
+    print(key)
     try:
       return storage.download_file_from_bucket(AWS_BUCKET, file, key)
     except:
@@ -132,7 +137,8 @@ class ObjectDetect(object):
 
         item['box'] = [left, right, top, bottom]
         item['class_name'] = class_name
-        item['class_code'] = class_code
+        # item['class_code'] = class_code
+        item['class_code'] = '2'
         item['score'] = scores[i]
         item['feature'] = feature_vector
         taken_boxes.append(item)
