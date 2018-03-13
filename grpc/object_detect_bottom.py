@@ -31,6 +31,8 @@ FEATURE_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
 OD_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
 OD_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
 OD_SCORE_MIN = float(os.environ['OD_SCORE_MIN'])
+GPU_NUM = os.environ['GPU_NUM']
+GPU = '/device:GPU:' + GPU_NUM
 
 MODEL_FILE = 'frozen_inference_graph.pb'
 LABEL_MAP_FILE = 'label_map.pbtxt'
@@ -59,10 +61,10 @@ class BottomObjectDetect(object):
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
 
-      with tf.device('/device:GPU:1'):
+      with tf.device(GPU):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        self.__sess = tf.Session(graph=self.__detection_graph)
+        self.__sess = tf.Session(config=config, graph=self.__detection_graph)
 
     log.info('_init_ done')
 

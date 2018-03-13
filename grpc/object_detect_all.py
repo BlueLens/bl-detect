@@ -16,11 +16,11 @@ from util import label_map_util
 
 TMP_CROP_IMG_FILE = './tmp.jpg'
 
-NUM_CLASSES = 1
+NUM_CLASSES = 3
 
 AWS_BUCKET = 'bluelens-style-model'
 AWS_BUCKET_FOLDER = 'object_detection'
-MODEL_TYPE = 'top'
+MODEL_TYPE = '3class'
 AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 REDIS_SERVER = os.environ['REDIS_SERVER']
@@ -40,10 +40,10 @@ options = {
   'REDIS_SERVER': REDIS_SERVER,
   'REDIS_PASSWORD': REDIS_PASSWORD
 }
-log = Logging(options, tag='bl-detect:TopObjectDetect')
+log = Logging(options, tag='bl-detect:AllObjectDetect')
 storage = s3.S3(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY)
 
-class TopObjectDetect(object):
+class AllObjectDetect(object):
   def __init__(self):
     label_map_file = self.load_labelemap()
     label_map = label_map_util.load_labelmap(label_map_file)
