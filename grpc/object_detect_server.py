@@ -24,6 +24,7 @@ from object_detect_top import TopObjectDetect
 from object_detect_bottom import BottomObjectDetect
 from object_detect_full import FullObjectDetect
 from object_detect_all import AllObjectDetect
+from object_detect_top_full import TopFullObjectDetect
 import object_detect_pb2
 import object_detect_pb2_grpc
 
@@ -35,25 +36,29 @@ REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
 
 rconn = redis.StrictRedis(REDIS_SERVER, port=6379, password=REDIS_PASSWORD)
 
+# model = top_full_model / bottom_model
 class Detect(object_detect_pb2_grpc.DetectServicer):
   def __init__(self):
     # self.top_od = TopObjectDetect()
-    # self.bottom_od = BottomObjectDetect()
+    self.bottom_od = BottomObjectDetect()
     # self.full_od = FullObjectDetect()
-    self.all_od = AllObjectDetect()
+    # self.all_od = AllObjectDetect()
+    self.top_full_od = TopFullObjectDetect()
 
   def GetObjects(self, request, context):
     # print(request)
     # top_objects = self.top_od.detect(request.file_data)
-    # bottom_objects = self.bottom_od.detect(request.file_data)
+    bottom_objects = self.bottom_od.detect(request.file_data)
     # full_objects = self.full_od.detect(request.file_data)
-    all_objects = self.all_od.detect(request.file_data)
+    # all_objects = self.all_od.detect(request.file_data)
+    top_full_object = self.top_full_od(request.file_data)
 
     objects = []
     # objects.extend(top_objects)
-    # objects.extend(bottom_objects)
+    objects.extend(bottom_objects)
     # objects.extend(full_objects)
-    objects.extend(all_objects)
+    # objects.extend(all_objects)
+    objects.extend(top_full_object)
 
     for object in objects:
       detectReply = object_detect_pb2.DetectReply()
