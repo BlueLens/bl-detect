@@ -31,10 +31,10 @@ import object_detect_pb2_grpc
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 OD_GRPC_PORT = os.environ['OD_GRPC_PORT']
-REDIS_SERVER = os.environ['REDIS_SERVER']
-REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
+#REDIS_SERVER = os.environ['REDIS_SERVER']
+#REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
 
-rconn = redis.StrictRedis(REDIS_SERVER, port=6379, password=REDIS_PASSWORD)
+#rconn = redis.StrictRedis(REDIS_SERVER, port=6379, password=REDIS_PASSWORD)
 
 # model = top_full_model / bottom_model
 class Detect(object_detect_pb2_grpc.DetectServicer):
@@ -51,7 +51,7 @@ class Detect(object_detect_pb2_grpc.DetectServicer):
     bottom_objects = self.bottom_od.detect(request.file_data)
     # full_objects = self.full_od.detect(request.file_data)
     # all_objects = self.all_od.detect(request.file_data)
-    top_full_object = self.top_full_od(request.file_data)
+    top_full_object = self.top_full_od.detect(request.file_data)
 
     objects = []
     # objects.extend(top_objects)
@@ -83,17 +83,18 @@ def serve():
   except KeyboardInterrupt:
     server.stop(0)
 
-def restart(rconn, pids):
-  while True:
-    key, value = rconn.blpop([REDIS_INDEX_RESTART_QUEUE])
-    for pid in pids:
-      os.kill(pid, signal.SIGTERM)
-    sys.exit()
+
+#def restart(rconn, pids):
+#  while True:
+#    key, value = rconn.blpop([REDIS_INDEX_RESTART_QUEUE])
+#    for pid in pids:
+#      os.kill(pid, signal.SIGTERM)
+#    sys.exit()
 
 if __name__ == '__main__':
   serve()
-  pids = []
-  p1 = Process(target=serve, args=(rconn,))
-  p1.start()
-  pids.append(p1.pid)
-  Process(target=restart, args=(rconn, pids)).start()
+  # pids = []
+  # p1 = Process(target=serve, args=(rconn,))
+  # p1.start()
+  # pids.append(p1.pid)
+  # Process(target=restart, args=(rconn, pids)).start()
