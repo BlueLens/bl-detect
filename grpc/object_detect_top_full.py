@@ -40,7 +40,7 @@ options = {
   'REDIS_SERVER': REDIS_SERVER,
   'REDIS_PASSWORD': REDIS_PASSWORD
 }
-log = Logging(options, tag='bl-detect:TopFullObjectDetect')
+log = Logging(options, tag='bl-detect:AllObjectDetect')
 storage = s3.S3(AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY)
 
 class TopFullObjectDetect(object):
@@ -140,10 +140,12 @@ class TopFullObjectDetect(object):
         item['box'] = [left, right, top, bottom]
         item['class_name'] = class_name
         #class_code==1(top), class_code==2(full)
-        if class_code == 1:
+        if class_code == '1':
           item['class_code'] = '1'
-        elif class_code == 2:
+        elif class_code == '2':
           item['class_code'] = '3'
+        else:
+          item['class_code'] = class_code
         item['score'] = scores[i]
         item['feature'] = feature_vector
         taken_boxes.append(item)
