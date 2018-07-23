@@ -198,5 +198,4 @@ venv.bak/
 .mypy_cache/
 
 grpc/tmp.jpg
-Dockerfile
 run_prod.sh

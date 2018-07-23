@@ -41,5 +41,7 @@ message DetectReply {
     string class_name = 2;
     string class_code = 3;
     float  score = 4;
-    bytes feature = 5;
+    string color_code = 5;
+    float color_score = 6;
+    //bytes feature = 5;
 }

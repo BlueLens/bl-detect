@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='object_detect.proto',
   package='objectdetect',
   syntax='proto3',
-  serialized_pb=_b('\n\x13object_detect.proto\x12\x0cobjectdetect\"D\n\x08Location\x12\x0c\n\x04left\x18\x01 \x01(\x02\x12\r\n\x05right\x18\x02 \x01(\x02\x12\x0b\n\x03top\x18\x03 \x01(\x02\x12\x0e\n\x06\x62ottom\x18\x04 \x01(\x02\"\"\n\rDetectRequest\x12\x11\n\tfile_data\x18\x01 \x01(\x0c\"\x7f\n\x0b\x44\x65tectReply\x12(\n\x08location\x18\x01 \x01(\x0b\x32\x16.objectdetect.Location\x12\x12\n\nclass_name\x18\x02 \x01(\t\x12\x12\n\nclass_code\x18\x03 \x01(\t\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x0f\n\x07\x66\x65\x61ture\x18\x05 \x01(\x0c\x32R\n\x06\x44\x65tect\x12H\n\nGetObjects\x12\x1b.objectdetect.DetectRequest\x1a\x19.objectdetect.DetectReply\"\x00\x30\x01\x42\x31\n\x13io.stylelens.detectB\x11ObjectDetectProtoP\x01\xa2\x02\x04STYLb\x06proto3')
+  serialized_pb=_b('\n\x13object_detect.proto\x12\x0cobjectdetect\"D\n\x08Location\x12\x0c\n\x04left\x18\x01 \x01(\x02\x12\r\n\x05right\x18\x02 \x01(\x02\x12\x0b\n\x03top\x18\x03 \x01(\x02\x12\x0e\n\x06\x62ottom\x18\x04 \x01(\x02\"\"\n\rDetectRequest\x12\x11\n\tfile_data\x18\x01 \x01(\x0c\"\x97\x01\n\x0b\x44\x65tectReply\x12(\n\x08location\x18\x01 \x01(\x0b\x32\x16.objectdetect.Location\x12\x12\n\nclass_name\x18\x02 \x01(\t\x12\x12\n\nclass_code\x18\x03 \x01(\t\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x12\n\ncolor_code\x18\x05 \x01(\t\x12\x13\n\x0b\x63olor_score\x18\x06 \x01(\x02\x32R\n\x06\x44\x65tect\x12H\n\nGetObjects\x12\x1b.objectdetect.DetectRequest\x1a\x19.objectdetect.DetectReply\"\x00\x30\x01\x42\x31\n\x13io.stylelens.detectB\x11ObjectDetectProtoP\x01\xa2\x02\x04STYLb\x06proto3')
 )
 
 
@@ -144,9 +144,16 @@ _DETECTREPLY = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='feature', full_name='objectdetect.DetectReply.feature', index=4,
-      number=5, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b(""),
+      name='color_code', full_name='objectdetect.DetectReply.color_code', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='color_score', full_name='objectdetect.DetectReply.color_score', index=5,
+      number=6, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -162,8 +169,8 @@ _DETECTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=143,
-  serialized_end=270,
+  serialized_start=144,
+  serialized_end=295,
 )
 
 _DETECTREPLY.fields_by_name['location'].message_type = _LOCATION
@@ -203,8 +210,8 @@ _DETECT = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=272,
-  serialized_end=354,
+  serialized_start=297,
+  serialized_end=379,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetObjects',
