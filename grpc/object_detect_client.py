@@ -48,7 +48,7 @@ def run():
     print(object.class_name)
     print(object.class_code)
     print(object.location)
-    arr = np.fromstring(object.feature, dtype=np.float32)
+    arr = np.fromstring(object.class_code, dtype=np.float32)
     print(arr)
 
 if __name__ == '__main__':

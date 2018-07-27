@@ -20,10 +20,10 @@ import os
 
 import grpc
 
-from object_detect_top import TopObjectDetect
+#from object_detect_top import TopObjectDetect
 from object_detect_bottom import BottomObjectDetect
-from object_detect_full import FullObjectDetect
-from object_detect_all import AllObjectDetect
+#from object_detect_full import FullObjectDetect
+#from object_detect_all import AllObjectDetect
 from object_detect_top_full import TopFullObjectDetect
 import object_detect_pb2
 import object_detect_pb2_grpc
@@ -69,7 +69,9 @@ class Detect(object_detect_pb2_grpc.DetectServicer):
       detectReply.location.right = object['box'][1]
       detectReply.location.top = object['box'][2]
       detectReply.location.bottom = object['box'][3]
-      detectReply.feature = object['feature']
+      #detectReply.feature = object['feature']
+      detectReply.color_code = object['color_code']
+      detectReply.color_score = object['color_score']
       yield  detectReply
 
 def serve():

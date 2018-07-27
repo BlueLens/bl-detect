@@ -8,7 +8,8 @@ from util import s3
 from PIL import Image
 import tensorflow as tf
 from object_detection.utils import visualization_utils as vis_util
-from stylelens_feature.feature_extract import ExtractFeature
+#from stylelens_feature.feature_extract import ExtractFeature
+from stylelens_color.color_extract import ExtractColor
 from bluelens_log import Logging
 
 import io
@@ -26,10 +27,14 @@ AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 REDIS_SERVER = os.environ['REDIS_SERVER']
 REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
 RELEASE_MODE = os.environ['RELEASE_MODE']
-FEATURE_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
-FEATURE_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
-OD_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
-OD_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
+COLOR_GRPC_HOST = os.environ['COLOR_GRPC_HOST']
+COLOR_GRPC_PORT = os.environ['COLOR_GRPC_HOST']
+OD_GRPC_HOST = os.environ['COLOR_GRPC_HOST']
+OD_GRPC_PORT = os.environ['COLOR_GRPC_PORT']
+#FEATURE_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
+#FEATURE_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
+#OD_GRPC_HOST = os.environ['FEATURE_GRPC_HOST']
+#OD_GRPC_PORT = os.environ['FEATURE_GRPC_PORT']
 OD_SCORE_MIN = float(os.environ['OD_SCORE_MIN'])
 GPU_NUM = os.environ['GPU_NUM']
 GPU = '/device:GPU:' + GPU_NUM
@@ -52,7 +57,8 @@ class TopFullObjectDetect(object):
                                                                 use_display_name=True)
     self.__category_index = label_map_util.create_category_index(categories)
     self.__detection_graph = tf.Graph()
-    self.__feature_extractor = ExtractFeature(use_gpu=True)
+    #self.__feature_extractor = ExtractFeature(use_gpu=True)
+    self.__color_extractor = ExtractColor(use_gpu=True)
     model_file = self.load_model()
     with self.__detection_graph.as_default():
       od_graph_def = tf.GraphDef()
@@ -134,7 +140,9 @@ class TopFullObjectDetect(object):
           xmax,
           use_normalized_coordinates=use_normalized_coordinates)
 
-        feature_vector = self.extract_feature(image_pil, left, right, top, bottom)
+        #feature_vector = self.extract_feature(image_pil, left, right, top, bottom)
+        color = self.extract_color(image_pil, left, right, top, bottom)
+
         item = {}
 
         item['box'] = [left, right, top, bottom]
@@ -147,10 +155,12 @@ class TopFullObjectDetect(object):
         else:
           item['class_code'] = class_code
         item['score'] = scores[i]
-        item['feature'] = feature_vector
+        #item['feature'] = feature_vector
+        item['color_code'] = color['class_code']
+        item['color_score'] = color['class_score']
         taken_boxes.append(item)
     return taken_boxes
-
+  """
   def extract_feature(self, image, left, right, top, bottom):
     area = (left, top, left + abs(left-right), top + abs(bottom-top))
     cropped_img = image.crop(area)
@@ -161,6 +171,13 @@ class TopFullObjectDetect(object):
     # cimage = Image.open(cimage)
     feature = self.__feature_extractor.extract_feature(TMP_CROP_IMG_FILE)
     return feature
+  """
+  def extract_color(self, image, left, right, top, bottom):
+    area = (left, top, left + abs(left-right), top + abs(bottom-top))
+    cropped_img = image.crop(area)
+    cropped_img.save(TMP_CROP_IMG_FILE)
+    color = self.__color_extractor.extract_color(TMP_CROP_IMG_FILE)
+    return color
 
   def load_image_into_numpy_array(self, image):
     (im_width, im_height) = image.size
