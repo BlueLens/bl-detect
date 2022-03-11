@@ -12,7 +12,7 @@ jmespath==0.9.3
 Markdown==2.6.11
 numpy==1.14.0
 olefile==0.44
-Pillow==4.3.0
+Pillow==9.0.1
 protobuf==3.5.1
 python-dateutil==2.6.1
 redis==2.10.6
